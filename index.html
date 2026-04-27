@@ -213,6 +213,57 @@
   }
   .reset-btn:active { background: var(--bg); }
 
+  /* ROTATION BANNER */
+  .rotation-banner {
+    margin: 16px 20px 0;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+  .rotation-week {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .rotation-row {
+    display: flex;
+    gap: 10px;
+  }
+  .rotation-person {
+    flex: 1;
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .rotation-person.bath { background: #D8EEF2; }
+  .rotation-person.kitchen { background: #EDE0D9; }
+  .rotation-person .rp-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .rotation-person .rp-zone {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .rotation-person .rp-icon { font-size: 18px; margin-bottom: 4px; }
+  .rotation-together {
+    background: #F0EDE8;
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
   /* FIREWORKS */
   #fireworks-canvas {
     position: fixed;
@@ -250,6 +301,8 @@
     <span class="icon">🍳</span> Køkken og stue
   </button>
 </div>
+
+<div id="rotation-banner" class="rotation-banner"></div>
 
 <div class="progress-wrap visible" id="progress-wrap">
   <div class="progress-bar-bg">
@@ -549,6 +602,71 @@
       }, 2000);
     }, 4000);
   }
+
+  // ROTATION LOGIC
+  // Runde 1: 10. maj 2025 — alle sammen
+  // Runde 2: 23. maj — Mathias: bad, Ost: køkken
+  // Runde 3: 6. juni  — Robert: bad, Mathias: køkken
+  // Runde 4: 20. juni — Ost: bad, Robert: køkken
+  // Gentager fra runde 2 (3-ugers cyklus)
+
+  const ROUND1 = new Date('2025-05-10');
+  const ROUND2 = new Date('2025-05-23');
+  const TWO_WEEKS = 14 * 24 * 60 * 60 * 1000;
+
+  const ROTATION = [
+    { bath: 'Mathias', kitchen: 'Ost' },
+    { bath: 'Robert',  kitchen: 'Mathias' },
+    { bath: 'Ost',     kitchen: 'Robert' },
+  ];
+
+  function getCurrentRound() {
+    const now = new Date();
+    if (now < ROUND2) return 'together';
+    const weeksSinceRound2 = Math.floor((now - ROUND2) / TWO_WEEKS);
+    return ROTATION[weeksSinceRound2 % 3];
+  }
+
+  function getWeekLabel() {
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - now.getDay() + 1); // Monday
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    const fmt = d => d.toLocaleDateString('da-DK', { day: 'numeric', month: 'short' });
+    return `${fmt(start)} - ${fmt(end)}`;
+  }
+
+  function renderRotation() {
+    const banner = document.getElementById('rotation-banner');
+    const round = getCurrentRound();
+    const weekLabel = getWeekLabel();
+
+    if (round === 'together') {
+      banner.innerHTML = `
+        <div class="rotation-week">Uge · ${weekLabel}</div>
+        <div class="rotation-together">🧹 Første rengøring — alle gør rent sammen lørdag d. 10. maj</div>
+      `;
+    } else {
+      banner.innerHTML = `
+        <div class="rotation-week">Uge · ${weekLabel}</div>
+        <div class="rotation-row">
+          <div class="rotation-person bath">
+            <span class="rp-icon">🚿</span>
+            <span class="rp-name">${round.bath}</span>
+            <span class="rp-zone">Badeværelse</span>
+          </div>
+          <div class="rotation-person kitchen">
+            <span class="rp-icon">🍳</span>
+            <span class="rp-name">${round.kitchen}</span>
+            <span class="rp-zone">Køkken og stue</span>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  renderRotation();
 
   let activeTab = 'bath';
 
