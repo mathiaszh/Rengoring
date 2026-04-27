@@ -8,712 +8,361 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #F7F4EF; --card: #FFFFFF; --ink: #1A1A18; --muted: #7A7A72; --accent-bath: #2C5F6E; --accent-kitchen: #5C3D2E; --accent-trophy: #B8860B; --border: #E2DDD6; --tab-h: 56px; }
+  html, body { min-height: 100vh; background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
 
-  :root {
-    --bg: #F7F4EF;
-    --card: #FFFFFF;
-    --ink: #1A1A18;
-    --muted: #7A7A72;
-    --accent-bath: #2C5F6E;
-    --accent-kitchen: #5C3D2E;
-    --check: #3AAF7A;
-    --border: #E2DDD6;
-    --tab-h: 56px;
-  }
+  #person-overlay { position: fixed; inset: 0; background: rgba(247,244,239,0.97); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; }
+  #person-overlay h2 { font-family: 'DM Serif Display', serif; font-size: 32px; text-align: center; margin-bottom: 8px; }
+  #person-overlay p { color: var(--muted); font-size: 14px; margin-bottom: 36px; text-align: center; }
+  .person-btn { width: 100%; max-width: 320px; padding: 18px; border: 1.5px solid var(--border); border-radius: 14px; background: var(--card); font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 500; color: var(--ink); cursor: pointer; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; transition: all 0.18s; }
+  .person-btn:active { background: #EEE9E2; transform: scale(0.98); }
 
-  html, body {
-    min-height: 100vh;
-    background: var(--bg);
-    font-family: 'DM Sans', sans-serif;
-    color: var(--ink);
-    -webkit-font-smoothing: antialiased;
-  }
+  header { padding: 28px 24px 0; text-align: center; }
+  header h1 { font-family: 'DM Serif Display', serif; font-size: clamp(26px, 7vw, 38px); letter-spacing: -0.5px; }
+  header p { margin-top: 4px; font-size: 13px; color: var(--muted); font-weight: 300; }
+  .who-badge { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; background: var(--card); border: 1.5px solid var(--border); border-radius: 99px; padding: 5px 14px; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .who-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-bath); }
 
-  /* HEADER */
-  header {
-    padding: 36px 24px 0;
-    text-align: center;
-  }
-  header h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(28px, 7vw, 42px);
-    letter-spacing: -0.5px;
-    line-height: 1.1;
-  }
-  header p {
-    margin-top: 6px;
-    font-size: 14px;
-    color: var(--muted);
-    font-weight: 300;
-    letter-spacing: 0.02em;
-  }
-
-  /* TABS */
-  .tabs {
-    display: flex;
-    margin: 28px 20px 0;
-    background: var(--border);
-    border-radius: 14px;
-    padding: 4px;
-    gap: 4px;
-  }
-  .tab-btn {
-    flex: 1;
-    height: var(--tab-h);
-    border: none;
-    background: transparent;
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.22s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-  .tab-btn .icon { font-size: 18px; }
-  .tab-btn.active {
-    color: #fff;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-  }
+  .tabs { display: flex; margin: 20px 20px 0; background: var(--border); border-radius: 14px; padding: 4px; gap: 4px; }
+  .tab-btn { flex: 1; height: var(--tab-h); border: none; background: transparent; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.22s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .tab-btn.active { color: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
   .tab-btn.active[data-tab="bath"] { background: var(--accent-bath); }
   .tab-btn.active[data-tab="kitchen"] { background: var(--accent-kitchen); }
+  .tab-btn.active[data-tab="trophy"] { background: var(--accent-trophy); }
 
-  /* PROGRESS */
-  .progress-wrap {
-    margin: 20px 20px 0;
-    display: none;
-  }
-  .progress-wrap.visible { display: block; }
-  .progress-bar-bg {
-    height: 6px;
-    background: var(--border);
-    border-radius: 99px;
-    overflow: hidden;
-  }
-  .progress-bar-fill {
-    height: 100%;
-    border-radius: 99px;
-    transition: width 0.35s cubic-bezier(.4,0,.2,1);
-    width: 0%;
-  }
-  .progress-bar-fill.bath { background: var(--accent-bath); }
-  .progress-bar-fill.kitchen { background: var(--accent-kitchen); }
-  .progress-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 6px;
-    font-weight: 400;
-  }
-
-  /* PANELS */
-  .panel { display: none; padding: 16px 20px 100px; }
-  .panel.active { display: block; }
-
-  /* CHECKLIST */
-  .checklist { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-
-  .check-item {
-    background: var(--card);
-    border-radius: 14px;
-    border: 1.5px solid var(--border);
-    overflow: hidden;
-    transition: border-color 0.2s, opacity 0.2s;
-    animation: slideIn 0.3s ease both;
-  }
-  .check-item label {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 16px 18px;
-    cursor: pointer;
-    user-select: none;
-  }
-  .check-item input[type="checkbox"] { display: none; }
-
-  .custom-check {
-    width: 26px;
-    height: 26px;
-    min-width: 26px;
-    border-radius: 8px;
-    border: 2px solid var(--border);
-    background: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-  }
-  .custom-check svg {
-    opacity: 0;
-    transform: scale(0.5);
-    transition: all 0.2s cubic-bezier(.4,0,.2,1);
-  }
-
-  .check-item input:checked ~ .task-label { color: var(--muted); text-decoration: line-through; }
-
-  /* Bath active color */
-  #panel-bath .check-item input:checked + .custom-check {
-    background: var(--accent-bath);
-    border-color: var(--accent-bath);
-  }
-  #panel-bath .check-item input:checked + .custom-check svg { opacity: 1; transform: scale(1); }
-  #panel-bath .check-item:has(input:checked) { border-color: #C8DDE2; opacity: 0.85; }
-
-  /* Kitchen active color */
-  #panel-kitchen .check-item input:checked + .custom-check {
-    background: var(--accent-kitchen);
-    border-color: var(--accent-kitchen);
-  }
-  #panel-kitchen .check-item input:checked + .custom-check svg { opacity: 1; transform: scale(1); }
-  #panel-kitchen .check-item:has(input:checked) { border-color: #D9C9C0; opacity: 0.85; }
-
-  .task-label {
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 1.3;
-    color: var(--ink);
-    transition: color 0.2s;
-  }
-
-  /* COMPLETION BANNER */
-  .done-banner {
-    display: none;
-    margin-top: 16px;
-    border-radius: 14px;
-    padding: 20px;
-    text-align: center;
-    font-weight: 500;
-    font-size: 15px;
-    animation: popIn 0.4s cubic-bezier(.4,0,.2,1);
-  }
-  .done-banner.bath { background: #D8EEF2; color: var(--accent-bath); }
-  .done-banner.kitchen { background: #EDE0D9; color: var(--accent-kitchen); }
-  .done-banner .big { font-family: 'DM Serif Display', serif; font-size: 28px; display: block; margin-bottom: 4px; }
-
-  /* RESET BUTTON */
-  .reset-btn {
-    display: none;
-    width: 100%;
-    margin-top: 14px;
-    padding: 16px;
-    border-radius: 14px;
-    border: 1.5px solid var(--border);
-    background: var(--card);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .reset-btn:active { background: var(--bg); }
-
-  /* ROTATION BANNER */
-  .rotation-banner {
-    margin: 16px 20px 0;
-    background: var(--card);
-    border: 1.5px solid var(--border);
-    border-radius: 14px;
-    padding: 16px 18px;
-  }
-  .rotation-week {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--muted);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-  .rotation-row {
-    display: flex;
-    gap: 10px;
-  }
-  .rotation-person {
-    flex: 1;
-    border-radius: 10px;
-    padding: 12px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
+  .rotation-banner { margin: 14px 20px 0; background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 16px; }
+  .rotation-week { font-size: 11px; font-weight: 500; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+  .rotation-row { display: flex; gap: 8px; }
+  .rotation-person { flex: 1; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
   .rotation-person.bath { background: #D8EEF2; }
   .rotation-person.kitchen { background: #EDE0D9; }
-  .rotation-person .rp-name {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--ink);
-  }
-  .rotation-person .rp-zone {
-    font-size: 12px;
-    font-weight: 400;
-    color: var(--muted);
-  }
-  .rotation-person .rp-icon { font-size: 18px; margin-bottom: 4px; }
-  .rotation-together {
-    background: #F0EDE8;
-    border-radius: 10px;
-    padding: 12px 14px;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--ink);
-  }
+  .rotation-person .rp-name { font-size: 14px; font-weight: 600; }
+  .rotation-person .rp-zone { font-size: 11px; color: var(--muted); }
+  .rotation-person .rp-icon { font-size: 16px; margin-bottom: 2px; }
+  .rotation-together { background: #F0EDE8; border-radius: 10px; padding: 10px 12px; text-align: center; font-size: 13px; font-weight: 500; }
 
-  /* FIREWORKS */
-  #fireworks-canvas {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 999;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
+  .progress-wrap { margin: 14px 20px 0; }
+  .progress-bar-bg { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.35s cubic-bezier(.4,0,.2,1); width: 0%; }
+  .progress-bar-fill.bath { background: var(--accent-bath); }
+  .progress-bar-fill.kitchen { background: var(--accent-kitchen); }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 5px; }
+
+  .panel { display: none; padding: 14px 20px 100px; }
+  .panel.active { display: block; }
+
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+  .check-item { background: var(--card); border-radius: 14px; border: 1.5px solid var(--border); overflow: hidden; transition: border-color 0.2s, opacity 0.2s; }
+  .check-item label { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; user-select: none; }
+  .check-item input[type="checkbox"] { display: none; }
+  .custom-check { width: 24px; height: 24px; min-width: 24px; border-radius: 7px; border: 2px solid var(--border); background: transparent; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .custom-check svg { opacity: 0; transform: scale(0.5); transition: all 0.2s cubic-bezier(.4,0,.2,1); }
+  .check-item input:checked ~ .task-label { color: var(--muted); text-decoration: line-through; }
+  #panel-bath .check-item input:checked + .custom-check { background: var(--accent-bath); border-color: var(--accent-bath); }
+  #panel-bath .check-item input:checked + .custom-check svg { opacity: 1; transform: scale(1); }
+  #panel-bath .check-item:has(input:checked) { border-color: #C8DDE2; opacity: 0.8; }
+  #panel-kitchen .check-item input:checked + .custom-check { background: var(--accent-kitchen); border-color: var(--accent-kitchen); }
+  #panel-kitchen .check-item input:checked + .custom-check svg { opacity: 1; transform: scale(1); }
+  #panel-kitchen .check-item:has(input:checked) { border-color: #D9C9C0; opacity: 0.8; }
+  .task-label { font-size: 14px; font-weight: 400; line-height: 1.3; color: var(--ink); transition: color 0.2s; }
+
+  .submit-btn { display: none; width: 100%; margin-top: 16px; padding: 18px; border-radius: 14px; border: none; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600; color: #fff; cursor: pointer; transition: all 0.2s; }
+  .submit-btn.bath { background: var(--accent-bath); }
+  .submit-btn.kitchen { background: var(--accent-kitchen); }
+  .submit-btn:active { transform: scale(0.98); opacity: 0.9; }
+  .submit-btn.loading { opacity: 0.7; pointer-events: none; }
+  .reset-btn { display: none; width: 100%; margin-top: 10px; padding: 14px; border-radius: 14px; border: 1.5px solid var(--border); background: var(--card); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; }
+
+  .lb-title { font-family: 'DM Serif Display', serif; font-size: 22px; margin: 14px 0 4px; }
+  .lb-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+  .lb-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 16px; }
+  .lb-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .lb-row:last-child { border-bottom: none; }
+  .lb-medal { font-size: 22px; min-width: 30px; text-align: center; }
+  .lb-name { font-size: 15px; font-weight: 600; flex: 1; }
+  .lb-count { font-size: 22px; font-weight: 600; color: var(--accent-trophy); }
+  .lb-count-label { font-size: 11px; color: var(--muted); text-align: right; }
+  .lb-log-title { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; margin: 20px 0 8px; }
+  .lb-log-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .lb-log-row { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .lb-log-row:last-child { border-bottom: none; }
+  .lb-log-icon { font-size: 18px; }
+  .lb-log-info { flex: 1; }
+  .lb-log-name { font-size: 14px; font-weight: 500; }
+  .lb-log-zone { font-size: 12px; color: var(--muted); }
+  .lb-log-date { font-size: 12px; color: var(--muted); text-align: right; }
+  .lb-empty { text-align: center; padding: 32px 20px; color: var(--muted); font-size: 14px; }
+
+  #fireworks-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; opacity: 0; transition: opacity 0.3s; }
   #fireworks-canvas.active { opacity: 1; }
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes popIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-  }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>Rengøringsplan</h1>
-  <p>Hald · Robert · Ost</p>
-</header>
-
-<div class="tabs">
-  <button class="tab-btn active" data-tab="bath" onclick="switchTab('bath')">
-    <span class="icon">🚿</span> Badeværelse
-  </button>
-  <button class="tab-btn" data-tab="kitchen" onclick="switchTab('kitchen')">
-    <span class="icon">🍳</span> Køkken og stue
-  </button>
-</div>
-
-<div id="rotation-banner" class="rotation-banner"></div>
-
-<div class="progress-wrap visible" id="progress-wrap">
-  <div class="progress-bar-bg">
-    <div class="progress-bar-fill bath" id="progress-fill"></div>
-  </div>
-  <div class="progress-label">
-    <span id="progress-text">0 af 9 opgaver</span>
-    <span id="progress-pct">0%</span>
-  </div>
-</div>
-
-<!-- BADEVÆRELSE -->
-<div class="panel active" id="panel-bath">
-  <div class="done-banner bath" id="done-bath">
-    <span class="big">Alt klaret ✓</span>
-    Badeværelset er rent. Godt gået!
-  </div>
-  <ul class="checklist" id="list-bath">
-    <li class="check-item" style="animation-delay:0.04s">
-      <label>
-        <input type="checkbox" onchange="update('bath')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Rens toilet ind- og udvendigt (inkl. toiletsæde og under kanten)</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.08s">
-      <label>
-        <input type="checkbox" onchange="update('bath')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Vask håndvask og bordplade</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.12s">
-      <label>
-        <input type="checkbox" onchange="update('bath')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Puds spejl</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.16s">
-      <label>
-        <input type="checkbox" onchange="update('bath')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Rens bruseniche – fjern sæberester, kalk og rens afløb</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.20s">
-      <label>
-        <input type="checkbox" onchange="update('bath')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Tør fliser og vindueskarm af</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.24s">
-      <label>
-        <input type="checkbox" onchange="update('bath')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Vask gulv</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.28s">
-      <label>
-        <input type="checkbox" onchange="update('bath')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Tøm skraldespand</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.32s">
-      <label>
-        <input type="checkbox" onchange="update('bath')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Fyld håndsæbe op ved behov</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.36s">
-      <label>
-        <input type="checkbox" onchange="update('bath')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Vask håndklæder og viskestykker</span>
-      </label>
-    </li>
-  </ul>
-  <button class="reset-btn" id="reset-bath" onclick="reset('bath')">↺ Nulstil badeværelse</button>
-</div>
-
-<!-- KØKKEN OG STUE -->
-<div class="panel" id="panel-kitchen">
-  <div class="done-banner kitchen" id="done-kitchen">
-    <span class="big">Alt klaret ✓</span>
-    Køkken og stue er rent. Godt gået!
-  </div>
-  <ul class="checklist" id="list-kitchen">
-    <li class="check-item" style="animation-delay:0.04s">
-      <label>
-        <input type="checkbox" onchange="update('kitchen')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Tør bordplader, komfur og emhætte af</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.08s">
-      <label>
-        <input type="checkbox" onchange="update('kitchen')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Rens køkkenvask</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.12s">
-      <label>
-        <input type="checkbox" onchange="update('kitchen')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Tør mikroovn af indvendigt + ovndør udvendigt</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.16s">
-      <label>
-        <input type="checkbox" onchange="update('kitchen')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Tør skabe af</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.20s">
-      <label>
-        <input type="checkbox" onchange="update('kitchen')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Kør opvaskemaskine og tøm den</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.24s">
-      <label>
-        <input type="checkbox" onchange="update('kitchen')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Tøm skraldespand, sorter affald og tag ud til container</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.28s">
-      <label>
-        <input type="checkbox" onchange="update('kitchen')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Ryd op på sofabord, spisebord og fælles flader</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.32s">
-      <label>
-        <input type="checkbox" onchange="update('kitchen')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Tør støv af på borde, hylder, reoler og TV-bord</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.36s">
-      <label>
-        <input type="checkbox" onchange="update('kitchen')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Tør kontakter, dørhåndtag og lyskontakter af</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.40s">
-      <label>
-        <input type="checkbox" onchange="update('kitchen')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Støvsug gulv i stue, køkken og entré/gang</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.44s">
-      <label>
-        <input type="checkbox" onchange="update('kitchen')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Vask gulv i køkken og alrum</span>
-      </label>
-    </li>
-    <li class="check-item" style="animation-delay:0.48s">
-      <label>
-        <input type="checkbox" onchange="update('kitchen')">
-        <span class="custom-check"><svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="task-label">Luft grundigt ud i alle rum</span>
-      </label>
-    </li>
-  </ul>
-  <button class="reset-btn" id="reset-kitchen" onclick="reset('kitchen')">↺ Nulstil køkken og stue</button>
+<div id="person-overlay">
+  <h2>Hvem er du?</h2>
+  <p>Vi husker dit valg til næste gang</p>
+  <button class="person-btn" onclick="setPerson('Mathias')"><span style="font-size:24px">👤</span> Mathias</button>
+  <button class="person-btn" onclick="setPerson('Robert')"><span style="font-size:24px">👤</span> Robert</button>
+  <button class="person-btn" onclick="setPerson('Ost')"><span style="font-size:24px">👤</span> Ost</button>
 </div>
 
 <canvas id="fireworks-canvas"></canvas>
 
+<header>
+  <h1>Rengøringsplan</h1>
+  <p>Hald · Robert · Ost</p>
+  <div class="who-badge" onclick="changePerson()">
+    <span class="dot"></span>
+    <span id="who-label">...</span>
+    <span style="color:var(--muted);font-size:11px">✎</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="bath" onclick="switchTab('bath')">🚿 Badeværelse</button>
+  <button class="tab-btn" data-tab="kitchen" onclick="switchTab('kitchen')">🍳 Køkken</button>
+  <button class="tab-btn" data-tab="trophy" onclick="switchTab('trophy')">🏆 Score</button>
+</div>
+
+<div id="rotation-banner" class="rotation-banner"></div>
+
+<div class="progress-wrap" id="progress-wrap">
+  <div class="progress-bar-bg"><div class="progress-bar-fill bath" id="progress-fill"></div></div>
+  <div class="progress-label"><span id="progress-text">0 opgaver</span><span id="progress-pct">0%</span></div>
+</div>
+
+<div class="panel active" id="panel-bath">
+  <ul class="checklist" id="list-bath">
+    <li class="check-item"><label><input type="checkbox" onchange="update('bath')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Rens toilet ind- og udvendigt (inkl. toiletsæde og under kanten)</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('bath')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Vask håndvask og bordplade</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('bath')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Puds spejl</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('bath')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Rens bruseniche – fjern sæberester, kalk og rens afløb</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('bath')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Tør fliser og vindueskarm af</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('bath')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Vask gulv</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('bath')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Tøm skraldespand</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('bath')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Fyld håndsæbe op ved behov</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('bath')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Vask håndklæder og viskestykker</span></label></li>
+  </ul>
+  <button class="submit-btn bath" id="submit-bath" onclick="submitCleaning('bath')">🧹 Registrér rengøring</button>
+  <button class="reset-btn" id="reset-bath" onclick="reset('bath')">↺ Nulstil</button>
+</div>
+
+<div class="panel" id="panel-kitchen">
+  <ul class="checklist" id="list-kitchen">
+    <li class="check-item"><label><input type="checkbox" onchange="update('kitchen')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Tør bordplader, komfur og emhætte af</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('kitchen')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Rens køkkenvask</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('kitchen')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Tør mikroovn af indvendigt + ovndør udvendigt</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('kitchen')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Tør skabe af</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('kitchen')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Kør opvaskemaskine og tøm den</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('kitchen')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Tøm skraldespand, sorter affald og tag ud til container</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('kitchen')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Ryd op på sofabord, spisebord og fælles flader</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('kitchen')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Tør støv af på borde, hylder, reoler og TV-bord</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('kitchen')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Tør kontakter, dørhåndtag og lyskontakter af</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('kitchen')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Støvsug gulv i stue, køkken og entré/gang</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('kitchen')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Vask gulv i køkken og alrum</span></label></li>
+    <li class="check-item"><label><input type="checkbox" onchange="update('kitchen')"><span class="custom-check"><svg width="13" height="10" viewBox="0 0 14 11" fill="none"><path d="M1 5L5.5 9.5L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="task-label">Luft grundigt ud i alle rum</span></label></li>
+  </ul>
+  <button class="submit-btn kitchen" id="submit-kitchen" onclick="submitCleaning('kitchen')">🧹 Registrér rengøring</button>
+  <button class="reset-btn" id="reset-kitchen" onclick="reset('kitchen')">↺ Nulstil</button>
+</div>
+
+<div class="panel" id="panel-trophy">
+  <p class="lb-title">Scoretavle</p>
+  <p class="lb-subtitle">Hvem gør mest rent?</p>
+  <div id="lb-scores"><div class="lb-empty">Henter data...</div></div>
+  <p class="lb-log-title">Seneste rengøringer</p>
+  <div id="lb-log" class="lb-log-card"><div class="lb-empty">Henter log...</div></div>
+</div>
+
 <script>
-  // FIREWORKS
-  const canvas = document.getElementById('fireworks-canvas');
-  const ctx = canvas.getContext('2d');
-  let particles = [];
-  let animFrame = null;
-  let fwTimeout = null;
+  const SUPABASE_URL = 'https://lvdkdnhvqbhnrytonikk.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_TX9fUfh4qtQTfpumzH_iHw_p77q4Krc';
 
-  function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
-
-  function randomColor() {
-    const colors = ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF9A3C','#C77DFF','#FF6FC8','#00D2FF','#FFFFFF'];
-    return colors[Math.floor(Math.random() * colors.length)];
+  async function sbFetch(path, options) {
+    options = options || {};
+    const res = await fetch(SUPABASE_URL + '/rest/v1' + path, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': options.prefer || '' },
+      method: options.method || 'GET',
+      body: options.body ? JSON.stringify(options.body) : undefined
+    });
+    if (!res.ok) throw new Error(await res.text());
+    if (res.status === 204) return null;
+    return res.json();
   }
 
-  function createBurst(x, y) {
-    const count = 80 + Math.floor(Math.random() * 40);
-    for (let i = 0; i < count; i++) {
-      const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.3;
-      const speed = 2 + Math.random() * 5;
-      particles.push({
-        x, y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        alpha: 1,
-        color: randomColor(),
-        size: 2 + Math.random() * 3,
-        gravity: 0.08 + Math.random() * 0.04,
-        decay: 0.012 + Math.random() * 0.008,
-        trail: []
-      });
-    }
+  var currentPerson = localStorage.getItem('rengoring_person');
+
+  function setPerson(name) {
+    currentPerson = name;
+    localStorage.setItem('rengoring_person', name);
+    document.getElementById('person-overlay').style.display = 'none';
+    document.getElementById('who-label').textContent = name;
+  }
+  function changePerson() { document.getElementById('person-overlay').style.display = 'flex'; }
+  function initPerson() {
+    if (currentPerson) { document.getElementById('person-overlay').style.display = 'none'; document.getElementById('who-label').textContent = currentPerson; }
   }
 
-  function launchRandom() {
-    const x = canvas.width * (0.2 + Math.random() * 0.6);
-    const y = canvas.height * (0.1 + Math.random() * 0.45);
-    createBurst(x, y);
-  }
-
-  function animateFireworks() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles = particles.filter(p => p.alpha > 0.02);
-    for (const p of particles) {
-      p.trail.push({ x: p.x, y: p.y });
-      if (p.trail.length > 5) p.trail.shift();
-
-      // Trail
-      for (let t = 0; t < p.trail.length - 1; t++) {
-        const ta = (t / p.trail.length) * p.alpha * 0.4;
-        ctx.beginPath();
-        ctx.moveTo(p.trail[t].x, p.trail[t].y);
-        ctx.lineTo(p.trail[t+1].x, p.trail[t+1].y);
-        ctx.strokeStyle = p.color;
-        ctx.globalAlpha = ta;
-        ctx.lineWidth = p.size * 0.6;
-        ctx.stroke();
-      }
-
-      // Particle
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fillStyle = p.color;
-      ctx.globalAlpha = p.alpha;
-      ctx.fill();
-
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += p.gravity;
-      p.vx *= 0.98;
-      p.alpha -= p.decay;
-    }
-    ctx.globalAlpha = 1;
-
-    if (particles.length > 0 || canvas.classList.contains('active')) {
-      animFrame = requestAnimationFrame(animateFireworks);
-    }
-  }
-
-  let burstInterval = null;
-
-  function startFireworks() {
-    canvas.classList.add('active');
-    particles = [];
-    if (animFrame) cancelAnimationFrame(animFrame);
-    if (burstInterval) clearInterval(burstInterval);
-    if (fwTimeout) clearTimeout(fwTimeout);
-
-    // Fire multiple bursts
-    launchRandom();
-    setTimeout(launchRandom, 300);
-    setTimeout(launchRandom, 600);
-    setTimeout(launchRandom, 900);
-    setTimeout(launchRandom, 1200);
-
-    burstInterval = setInterval(() => {
-      launchRandom();
-    }, 700);
-
-    animateFireworks();
-
-    fwTimeout = setTimeout(() => {
-      clearInterval(burstInterval);
-      burstInterval = null;
-      // Let remaining particles fade out
-      setTimeout(() => {
-        canvas.classList.remove('active');
-        particles = [];
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }, 2000);
-    }, 4000);
-  }
-
-  // ROTATION LOGIC
-  // Runde 1: 10. maj 2025 — alle sammen
-  // Runde 2: 23. maj — Mathias: bad, Ost: køkken
-  // Runde 3: 6. juni  — Robert: bad, Mathias: køkken
-  // Runde 4: 20. juni — Ost: bad, Robert: køkken
-  // Gentager fra runde 2 (3-ugers cyklus)
-
-  const ROUND1 = new Date('2025-05-10');
-  const ROUND2 = new Date('2025-05-23');
-  const TWO_WEEKS = 14 * 24 * 60 * 60 * 1000;
-
-  const ROTATION = [
-    { bath: 'Mathias', kitchen: 'Ost' },
-    { bath: 'Robert',  kitchen: 'Mathias' },
-    { bath: 'Ost',     kitchen: 'Robert' },
-  ];
+  var ROUND2 = new Date('2025-05-23');
+  var TWO_WEEKS = 14 * 24 * 60 * 60 * 1000;
+  var ROTATION = [{ bath: 'Mathias', kitchen: 'Ost' }, { bath: 'Robert', kitchen: 'Mathias' }, { bath: 'Ost', kitchen: 'Robert' }];
 
   function getCurrentRound() {
-    const now = new Date();
+    var now = new Date();
     if (now < ROUND2) return 'together';
-    const weeksSinceRound2 = Math.floor((now - ROUND2) / TWO_WEEKS);
-    return ROTATION[weeksSinceRound2 % 3];
+    return ROTATION[Math.floor((now - ROUND2) / TWO_WEEKS) % 3];
   }
 
   function getWeekLabel() {
-    const now = new Date();
-    const start = new Date(now);
-    start.setDate(now.getDate() - now.getDay() + 1); // Monday
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6);
-    const fmt = d => d.toLocaleDateString('da-DK', { day: 'numeric', month: 'short' });
-    return `${fmt(start)} - ${fmt(end)}`;
+    var now = new Date(), mon = new Date(now), sun;
+    mon.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    var fmt = function(d) { return d.toLocaleDateString('da-DK', { day: 'numeric', month: 'short' }); };
+    return fmt(mon) + ' - ' + fmt(sun);
   }
 
   function renderRotation() {
-    const banner = document.getElementById('rotation-banner');
-    const round = getCurrentRound();
-    const weekLabel = getWeekLabel();
-
+    var banner = document.getElementById('rotation-banner');
+    var round = getCurrentRound();
     if (round === 'together') {
-      banner.innerHTML = `
-        <div class="rotation-week">Uge · ${weekLabel}</div>
-        <div class="rotation-together">🧹 Første rengøring — alle gør rent sammen lørdag d. 10. maj</div>
-      `;
+      banner.innerHTML = '<div class="rotation-week">Uge \xB7 ' + getWeekLabel() + '</div><div class="rotation-together">\uD83E\uDDF9 F\xF8rste reng\xF8ring \u2014 alle g\xF8r rent sammen l\xF8rdag d. 10. maj</div>';
     } else {
-      banner.innerHTML = `
-        <div class="rotation-week">Uge · ${weekLabel}</div>
-        <div class="rotation-row">
-          <div class="rotation-person bath">
-            <span class="rp-icon">🚿</span>
-            <span class="rp-name">${round.bath}</span>
-            <span class="rp-zone">Badeværelse</span>
-          </div>
-          <div class="rotation-person kitchen">
-            <span class="rp-icon">🍳</span>
-            <span class="rp-name">${round.kitchen}</span>
-            <span class="rp-zone">Køkken og stue</span>
-          </div>
-        </div>
-      `;
+      banner.innerHTML = '<div class="rotation-week">Uge \xB7 ' + getWeekLabel() + '</div><div class="rotation-row"><div class="rotation-person bath"><span class="rp-icon">\uD83D\uDEBF</span><span class="rp-name">' + round.bath + '</span><span class="rp-zone">Badev\xE6relse</span></div><div class="rotation-person kitchen"><span class="rp-icon">\uD83C\uDF73</span><span class="rp-name">' + round.kitchen + '</span><span class="rp-zone">K\xF8kken og stue</span></div></div>';
     }
   }
 
-  renderRotation();
-
-  let activeTab = 'bath';
-
+  var activeTab = 'bath';
   function switchTab(tab) {
     activeTab = tab;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById(`panel-${tab}`).classList.add('active');
-    renderProgress(tab);
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelector('[data-tab="' + tab + '"]').classList.add('active');
+    document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+    var showMeta = tab !== 'trophy';
+    document.getElementById('progress-wrap').style.display = showMeta ? 'block' : 'none';
+    document.getElementById('rotation-banner').style.display = showMeta ? 'block' : 'none';
+    if (tab === 'trophy') { document.getElementById('panel-trophy').classList.add('active'); loadLeaderboard(); }
+    else { document.getElementById('panel-' + tab).classList.add('active'); renderProgress(tab); }
   }
 
   function update(tab) {
     renderProgress(tab);
-    const boxes = document.querySelectorAll(`#list-${tab} input[type="checkbox"]`);
-    const total = boxes.length;
-    const checked = [...boxes].filter(b => b.checked).length;
-    const done = checked === total;
-
-    const wasHidden = document.getElementById(`done-${tab}`).style.display === 'none' || document.getElementById(`done-${tab}`).style.display === '';
-    document.getElementById(`done-${tab}`).style.display = done ? 'block' : 'none';
-    document.getElementById(`reset-${tab}`).style.display = checked > 0 ? 'block' : 'none';
-    if (done && wasHidden) startFireworks();
+    var boxes = document.querySelectorAll('#list-' + tab + ' input[type="checkbox"]');
+    var all = true, any = false;
+    boxes.forEach(function(b) { if (!b.checked) all = false; else any = true; });
+    document.getElementById('submit-' + tab).style.display = all ? 'block' : 'none';
+    document.getElementById('reset-' + tab).style.display = any ? 'block' : 'none';
   }
 
   function renderProgress(tab) {
-    const boxes = document.querySelectorAll(`#list-${tab} input[type="checkbox"]`);
-    const total = boxes.length;
-    const checked = [...boxes].filter(b => b.checked).length;
-    const pct = Math.round((checked / total) * 100);
-
-    const fill = document.getElementById('progress-fill');
+    var boxes = document.querySelectorAll('#list-' + tab + ' input[type="checkbox"]');
+    var total = boxes.length, checked = 0;
+    boxes.forEach(function(b) { if (b.checked) checked++; });
+    var pct = Math.round((checked / total) * 100);
+    var fill = document.getElementById('progress-fill');
     fill.style.width = pct + '%';
-    fill.className = `progress-bar-fill ${tab}`;
-    document.getElementById('progress-text').textContent = `${checked} af ${total} opgaver`;
+    fill.className = 'progress-bar-fill ' + tab;
+    document.getElementById('progress-text').textContent = checked + ' af ' + total + ' opgaver';
     document.getElementById('progress-pct').textContent = pct + '%';
   }
 
   function reset(tab) {
-    document.querySelectorAll(`#list-${tab} input[type="checkbox"]`).forEach(b => b.checked = false);
-    document.getElementById(`done-${tab}`).style.display = 'none';
-    document.getElementById(`reset-${tab}`).style.display = 'none';
+    document.querySelectorAll('#list-' + tab + ' input[type="checkbox"]').forEach(function(b) { b.checked = false; });
+    document.getElementById('submit-' + tab).style.display = 'none';
+    document.getElementById('reset-' + tab).style.display = 'none';
     renderProgress(tab);
   }
 
-  // Init
-  renderProgress('bath');
+  async function submitCleaning(zone) {
+    if (!currentPerson) { changePerson(); return; }
+    var btn = document.getElementById('submit-' + zone);
+    btn.classList.add('loading');
+    btn.textContent = 'Gemmer...';
+    try {
+      await sbFetch('/cleaning_logs', { method: 'POST', prefer: 'return=minimal', body: { person: currentPerson, zone: zone === 'bath' ? 'Badev\xE6relse' : 'K\xF8kken og stue' } });
+      btn.style.display = 'none';
+      reset(zone);
+      startFireworks();
+    } catch(e) {
+      btn.classList.remove('loading');
+      btn.textContent = '\uD83E\uDDF9 Registr\xE9r reng\xF8ring';
+      alert('Der skete en fejl. Pr\xF8v igen.');
+      console.error(e);
+    }
+  }
+
+  async function loadLeaderboard() {
+    try {
+      var data = await sbFetch('/cleaning_logs?select=person,zone,created_at&order=created_at.desc&limit=50');
+      var counts = { Mathias: 0, Robert: 0, Ost: 0 };
+      data.forEach(function(row) { if (counts[row.person] !== undefined) counts[row.person]++; });
+      var sorted = Object.entries(counts).sort(function(a,b) { return b[1]-a[1]; });
+      var medals = ['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
+      document.getElementById('lb-scores').innerHTML = '<div class="lb-card">' + sorted.map(function(e,i) {
+        return '<div class="lb-row"><span class="lb-medal">' + medals[i] + '</span><span class="lb-name">' + e[0] + '</span><div style="text-align:right"><div class="lb-count">' + e[1] + '</div><div class="lb-count-label">gange</div></div></div>';
+      }).join('') + '</div>';
+      var logEl = document.getElementById('lb-log');
+      if (!data.length) { logEl.innerHTML = '<div class="lb-empty">Ingen reng\xF8ringer registreret endnu \uD83E\uDEB7</div>'; return; }
+      logEl.innerHTML = data.slice(0,10).map(function(row) {
+        var d = new Date(row.created_at);
+        var dateStr = d.toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' });
+        var icon = row.zone === 'Badev\xE6relse' ? '\uD83D\uDEBF' : '\uD83C\uDF73';
+        return '<div class="lb-log-row"><span class="lb-log-icon">' + icon + '</span><div class="lb-log-info"><div class="lb-log-name">' + row.person + '</div><div class="lb-log-zone">' + row.zone + '</div></div><div class="lb-log-date">' + dateStr + '</div></div>';
+      }).join('');
+    } catch(e) {
+      document.getElementById('lb-scores').innerHTML = '<div class="lb-empty">Kunne ikke hente data</div>';
+      document.getElementById('lb-log').innerHTML = '<div class="lb-empty">Kunne ikke hente log</div>';
+      console.error(e);
+    }
+  }
+
+  var canvas = document.getElementById('fireworks-canvas');
+  var ctx = canvas.getContext('2d');
+  var particles = [], animFrame = null, burstInterval = null, fwTimeout = null;
+
+  function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resizeCanvas); resizeCanvas();
+
+  function randomColor() { return ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF9A3C','#C77DFF','#FF6FC8','#00D2FF','#FFFFFF'][Math.floor(Math.random()*9)]; }
+
+  function createBurst(x, y) {
+    var count = 80 + Math.floor(Math.random()*40);
+    for (var i = 0; i < count; i++) {
+      var angle = (Math.PI*2/count)*i + (Math.random()-0.5)*0.3, speed = 2+Math.random()*5;
+      particles.push({ x:x, y:y, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed, alpha:1, color:randomColor(), size:2+Math.random()*3, gravity:0.08+Math.random()*0.04, decay:0.012+Math.random()*0.008, trail:[] });
+    }
+  }
+
+  function launchRandom() { createBurst(canvas.width*(0.2+Math.random()*0.6), canvas.height*(0.1+Math.random()*0.45)); }
+
+  function animateFireworks() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles = particles.filter(function(p) { return p.alpha > 0.02; });
+    particles.forEach(function(p) {
+      p.trail.push({x:p.x,y:p.y}); if (p.trail.length>5) p.trail.shift();
+      for (var t=0;t<p.trail.length-1;t++) { ctx.beginPath(); ctx.moveTo(p.trail[t].x,p.trail[t].y); ctx.lineTo(p.trail[t+1].x,p.trail[t+1].y); ctx.strokeStyle=p.color; ctx.globalAlpha=(t/p.trail.length)*p.alpha*0.4; ctx.lineWidth=p.size*0.6; ctx.stroke(); }
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fillStyle=p.color; ctx.globalAlpha=p.alpha; ctx.fill();
+      p.x+=p.vx; p.y+=p.vy; p.vy+=p.gravity; p.vx*=0.98; p.alpha-=p.decay;
+    });
+    ctx.globalAlpha=1;
+    if (particles.length>0 || canvas.classList.contains('active')) animFrame = requestAnimationFrame(animateFireworks);
+  }
+
+  function startFireworks() {
+    canvas.classList.add('active'); particles=[];
+    if (animFrame) cancelAnimationFrame(animFrame);
+    if (burstInterval) clearInterval(burstInterval);
+    if (fwTimeout) clearTimeout(fwTimeout);
+    launchRandom(); setTimeout(launchRandom,300); setTimeout(launchRandom,600); setTimeout(launchRandom,900); setTimeout(launchRandom,1200);
+    burstInterval = setInterval(launchRandom, 700);
+    animateFireworks();
+    fwTimeout = setTimeout(function() {
+      clearInterval(burstInterval); burstInterval=null;
+      setTimeout(function() { canvas.classList.remove('active'); particles=[]; ctx.clearRect(0,0,canvas.width,canvas.height); }, 2000);
+    }, 4000);
+  }
+
+  initPerson(); renderRotation(); renderProgress('bath');
 </script>
 </body>
 </html>
