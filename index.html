@@ -204,31 +204,87 @@
     if (currentPerson) { document.getElementById('person-overlay').style.display = 'none'; document.getElementById('who-label').textContent = currentPerson; }
   }
 
-  var ROUND2 = new Date('2026-05-23');
-  var TWO_WEEKS = 14 * 24 * 60 * 60 * 1000;
-  var ROTATION = [{ bath: 'Mathias', kitchen: 'Ost' }, { bath: 'Robert', kitchen: 'Mathias' }, { bath: 'Ost', kitchen: 'Robert' }];
+  var ROTATION_START = new Date('2026-05-18');
+  var ROTATION = [
+    { bath: 'Mathias', kitchen: 'Ost' },
+    { bath: 'Robert',  kitchen: 'Mathias' },
+    { bath: 'Ost',     kitchen: 'Robert' }
+  ];
 
-  function getCurrentRound() {
-    var now = new Date();
-    if (now < ROUND2) return 'together';
-    return ROTATION[Math.floor((now - ROUND2) / TWO_WEEKS) % 3];
+  function getMondayOf(date) {
+    var d = new Date(date);
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    d.setHours(0,0,0,0);
+    return d;
   }
 
-  function getWeekLabel() {
-    var now = new Date(), mon = new Date(now), sun;
-    mon.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-    sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  function getWeekLabel(monday) {
+    var sun = new Date(monday);
+    sun.setDate(monday.getDate() + 6);
     var fmt = function(d) { return d.toLocaleDateString('da-DK', { day: 'numeric', month: 'short' }); };
-    return fmt(mon) + ' - ' + fmt(sun);
+    return fmt(monday) + ' - ' + fmt(sun);
+  }
+
+  function getWeekNumber(date) {
+    var d = new Date(date);
+    d.setHours(0,0,0,0);
+    d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+    var week1 = new Date(d.getFullYear(), 0, 4);
+    return 1 + Math.round(((d - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
+  }
+
+  function getRotationForWeekStart(monday) {
+    var startMonday = getMondayOf(ROTATION_START);
+    var diff = monday - startMonday;
+    var weekIndex = Math.round(diff / (7 * 24 * 60 * 60 * 1000));
+    if (weekIndex < 0) return null;
+    var isCleaningWeek = weekIndex % 2 === 0;
+    var roundIndex = Math.floor(weekIndex / 2) % 3;
+    return { round: ROTATION[roundIndex], isCleaningWeek: isCleaningWeek };
+  }
+
+  function getNextCleaningWeek(fromMonday) {
+    var monday = new Date(fromMonday);
+    monday.setDate(monday.getDate() + 7);
+    for (var i = 0; i < 10; i++) {
+      var info = getRotationForWeekStart(monday);
+      if (info && info.isCleaningWeek) return { monday: new Date(monday), round: info.round };
+      monday.setDate(monday.getDate() + 7);
+    }
+    return null;
   }
 
   function renderRotation() {
     var banner = document.getElementById('rotation-banner');
-    var round = getCurrentRound();
-    if (round === 'together') {
-      banner.innerHTML = '<div class="rotation-week">Uge \xB7 ' + getWeekLabel() + '</div><div class="rotation-together">\uD83E\uDDF9 F\xF8rste reng\xF8ring \u2014 alle g\xF8r rent sammen l\xF8rdag d. 10. maj</div>';
+    var now = new Date();
+    var thisMonday = getMondayOf(now);
+    var weekNum = getWeekNumber(now);
+    var weekLabel = getWeekLabel(thisMonday);
+
+    var FIRST_CLEANING_END = new Date('2026-05-11'); // Mandag efter fælles rengøring
+
+    if (now < FIRST_CLEANING_END) {
+      banner.innerHTML = '<div class="rotation-week">Uge ' + weekNum + ' \xB7 ' + weekLabel + '</div><div class="rotation-together">\uD83E\uDDF9 F\xF8rste reng\xF8ring \u2014 alle g\xF8r rent sammen s\xF8ndag d. 10. maj</div>';
+      return;
+    }
+
+    if (now >= FIRST_CLEANING_END && now < ROTATION_START) {
+      var nextMonday = getMondayOf(ROTATION_START);
+      var nextInfo = getRotationForWeekStart(nextMonday);
+      var nextWeekNum = getWeekNumber(ROTATION_START);
+      banner.innerHTML = '<div class="rotation-week">Uge ' + weekNum + ' \xB7 ' + weekLabel + '</div><div class="rotation-together" style="text-align:left"><div style="font-weight:600;margin-bottom:4px">Ingen reng\xF8ring denne uge \uD83E\uDDF8</div><div style="font-size:12px;color:var(--muted)">N\xE6ste gang: Uge ' + nextWeekNum + ' \u2014 ' + nextInfo.round.bath + ': Badev\xE6relse, ' + nextInfo.round.kitchen + ': K\xF8kken</div></div>';
+      return;
+    }
+
+    var info = getRotationForWeekStart(thisMonday);
+
+    if (info && info.isCleaningWeek) {
+      banner.innerHTML = '<div class="rotation-week">Uge ' + weekNum + ' \xB7 ' + weekLabel + '</div><div class="rotation-row"><div class="rotation-person bath"><span class="rp-icon">\uD83D\uDEBF</span><span class="rp-name">' + info.round.bath + '</span><span class="rp-zone">Badev\xE6relse</span></div><div class="rotation-person kitchen"><span class="rp-icon">\uD83C\uDF73</span><span class="rp-name">' + info.round.kitchen + '</span><span class="rp-zone">K\xF8kken og stue</span></div></div>';
     } else {
-      banner.innerHTML = '<div class="rotation-week">Uge \xB7 ' + getWeekLabel() + '</div><div class="rotation-row"><div class="rotation-person bath"><span class="rp-icon">\uD83D\uDEBF</span><span class="rp-name">' + round.bath + '</span><span class="rp-zone">Badev\xE6relse</span></div><div class="rotation-person kitchen"><span class="rp-icon">\uD83C\uDF73</span><span class="rp-name">' + round.kitchen + '</span><span class="rp-zone">K\xF8kken og stue</span></div></div>';
+      var next = getNextCleaningWeek(thisMonday);
+      var nextWeekNum = next ? getWeekNumber(next.monday) : '?';
+      var nextInfo = next ? 'Uge ' + nextWeekNum + ' \u2014 ' + next.round.bath + ': Badev\xE6relse, ' + next.round.kitchen + ': K\xF8kken' : '';
+      banner.innerHTML = '<div class="rotation-week">Uge ' + weekNum + ' \xB7 ' + weekLabel + '</div><div class="rotation-together" style="text-align:left"><div style="font-weight:600;margin-bottom:4px">Ingen reng\xF8ring denne uge \uD83E\uDDF8</div><div style="font-size:12px;color:var(--muted)">N\xE6ste gang: ' + nextInfo + '</div></div>';
     }
   }
 
