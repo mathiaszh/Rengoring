@@ -102,7 +102,7 @@
 <div id="person-overlay">
   <h2>Hvem er du?</h2>
   <p>Vi husker dit valg til næste gang</p>
-  <button class="person-btn" onclick="setPerson('Mathias')"><span style="font-size:24px">👤</span> Mathias</button>
+  <button class="person-btn" onclick="setPerson('Hald')"><span style="font-size:24px">👤</span> Hald</button>
   <button class="person-btn" onclick="setPerson('Robert')"><span style="font-size:24px">👤</span> Robert</button>
   <button class="person-btn" onclick="setPerson('Ost')"><span style="font-size:24px">👤</span> Ost</button>
 </div>
@@ -194,6 +194,11 @@
   }
 
   var currentPerson = localStorage.getItem('rengoring_person');
+  // Migrering: gamle browsere kan have "Mathias" gemt fra forrige version
+  if (currentPerson === 'Mathias') {
+    currentPerson = 'Hald';
+    localStorage.setItem('rengoring_person', 'Hald');
+  }
 
   function setPerson(name) {
     currentPerson = name;
@@ -208,9 +213,9 @@
 
   var ROTATION_START = new Date('2026-05-18');
   var ROTATION = [
-    { bath: 'Mathias', kitchen: 'Ost' },
-    { bath: 'Robert',  kitchen: 'Mathias' },
-    { bath: 'Ost',     kitchen: 'Robert' }
+    { bath: 'Hald',   kitchen: 'Ost' },
+    { bath: 'Robert', kitchen: 'Hald' },
+    { bath: 'Ost',    kitchen: 'Robert' }
   ];
 
   function getMondayOf(date) {
@@ -352,8 +357,12 @@
   async function loadLeaderboard() {
     try {
       var data = await sbFetch('/cleaning_logs?select=person,zone,created_at&order=created_at.desc&limit=50');
-      var counts = { Mathias: 0, Robert: 0, Ost: 0 };
-      data.forEach(function(row) { if (counts[row.person] !== undefined) counts[row.person]++; });
+      var counts = { Hald: 0, Robert: 0, Ost: 0 };
+      data.forEach(function(row) {
+        // Bagudkompatibilitet: gamle rækker med "Mathias" tæller som "Hald"
+        var p = row.person === 'Mathias' ? 'Hald' : row.person;
+        if (counts[p] !== undefined) counts[p]++;
+      });
       var sorted = Object.entries(counts).sort(function(a,b) { return b[1]-a[1]; });
       var medals = ['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
       document.getElementById('lb-scores').innerHTML = '<div class="lb-card">' + sorted.map(function(e,i) {
@@ -365,7 +374,8 @@
         var d = new Date(row.created_at);
         var dateStr = d.toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' });
         var icon = row.zone === 'Badev\xE6relse' ? '\uD83D\uDEBF' : '\uD83C\uDF73';
-        return '<div class="lb-log-row"><span class="lb-log-icon">' + icon + '</span><div class="lb-log-info"><div class="lb-log-name">' + row.person + '</div><div class="lb-log-zone">' + row.zone + '</div></div><div class="lb-log-date">' + dateStr + '</div></div>';
+        var displayName = row.person === 'Mathias' ? 'Hald' : row.person;
+        return '<div class="lb-log-row"><span class="lb-log-icon">' + icon + '</span><div class="lb-log-info"><div class="lb-log-name">' + displayName + '</div><div class="lb-log-zone">' + row.zone + '</div></div><div class="lb-log-date">' + dateStr + '</div></div>';
       }).join('');
     } catch(e) {
       document.getElementById('lb-scores').innerHTML = '<div class="lb-empty">Kunne ikke hente data</div>';
